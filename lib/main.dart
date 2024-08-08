@@ -5,7 +5,6 @@ import "package:google_maps_apis/geocoding.dart";
 
 final geocoding = GoogleMapsGeocoding(apiKey: "<GOOGLE_API_KEY>");
 final directions = d.GoogleMapsDirections(apiKey: "<GOOGLE_API_KEY>");
-
 void main() {
   runApp(const MainApp());
 }
@@ -43,6 +42,7 @@ class _MainAppState extends State<MainApp> {
           width: 5,
         ));
       });
+      focusOnPolyline();
     } else {
       //error
     }
@@ -77,6 +77,32 @@ class _MainAppState extends State<MainApp> {
     }
 
     return points;
+  }
+
+  void focusOnPolyline() {
+    if (polylineCoordinates.isEmpty) return;
+
+    LatLngBounds bounds = _getLatLngBounds(polylineCoordinates);
+    mapController?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
+  }
+
+  LatLngBounds _getLatLngBounds(List<LatLng> points) {
+    double southWestLat = points.first.latitude;
+    double southWestLng = points.first.longitude;
+    double northEastLat = points.first.latitude;
+    double northEastLng = points.first.longitude;
+
+    for (LatLng point in points) {
+      if (point.latitude < southWestLat) southWestLat = point.latitude;
+      if (point.longitude < southWestLng) southWestLng = point.longitude;
+      if (point.latitude > northEastLat) northEastLat = point.latitude;
+      if (point.longitude > northEastLng) northEastLng = point.longitude;
+    }
+
+    return LatLngBounds(
+      southwest: LatLng(southWestLat, southWestLng),
+      northeast: LatLng(northEastLat, northEastLng),
+    );
   }
 
   @override
